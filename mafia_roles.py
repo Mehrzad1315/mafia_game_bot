@@ -4,6 +4,7 @@ import logging
 import random
 import uuid
 import os
+import asyncio
 
 from telegram import (
     Update, InlineKeyboardButton, InlineKeyboardMarkup,
@@ -567,29 +568,38 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 TOKEN = os.getenv("BOT_TOKEN")
-app = ApplicationBuilder().token(TOKEN).build()
 
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CallbackQueryHandler(activate_account, pattern="^activate_account$"))
+async def main():
+    app = ApplicationBuilder().token(TOKEN).build()
 
-conv_handler = ConversationHandler(
-    entry_points=[CommandHandler("startgame", startgame),
-        CallbackQueryHandler(restart_button, pattern="^restartbtn_")
-    ],
-    states={
-        SELECT_SCENARIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, select_scenario)],
-        SELECT_PLAYER_COUNT: [MessageHandler(filters.TEXT & ~filters.COMMAND, select_player_count)],
-    },
-    fallbacks=[CommandHandler("cancel", cancel)],
-    per_chat=True
-)
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(activate_account, pattern="^activate_account$"))
 
-app.add_handler(conv_handler)
-app.add_handler(CallbackQueryHandler(join_button, pattern="^join_"))
-app.add_handler(CallbackQueryHandler(start_button, pattern="^startbtn_"))
-app.add_handler(CallbackQueryHandler(view_players, pattern="^view_"))
-app.add_handler(CallbackQueryHandler(add_fake_players, pattern=r"^add_fake_players\|"))
-app.add_handler(CallbackQueryHandler(end_game, pattern="^endgame_"))
-app.add_handler(CallbackQueryHandler(restart_button, pattern="^restartbtn_"))
+    conv_handler = ConversationHandler(
+        entry_points=[
+            CommandHandler("startgame", startgame),
+            CallbackQueryHandler(restart_button, pattern="^restartbtn_")
+        ],
+        states={
+            SELECT_SCENARIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, select_scenario)],
+            SELECT_PLAYER_COUNT: [MessageHandler(filters.TEXT & ~filters.COMMAND, select_player_count)],
+        },
+        fallbacks=[CommandHandler("cancel", cancel)],
+        per_chat=True
+    )
 
-app.run_polling()
+    app.add_handler(conv_handler)
+    app.add_handler(CallbackQueryHandler(join_button, pattern="^join_"))
+    app.add_handler(CallbackQueryHandler(start_button, pattern="^startbtn_"))
+    app.add_handler(CallbackQueryHandler(view_players, pattern="^view_"))
+    app.add_handler(CallbackQueryHandler(add_fake_players, pattern=r"^add_fake_players\|"))
+    app.add_handler(CallbackQueryHandler(end_game, pattern="^endgame_"))
+    app.add_handler(CallbackQueryHandler(restart_button, pattern="^restartbtn_"))
+
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling()
+    await app.updater.idle()
+
+if __name__ == "__main__":
+    asyncio.run(main())
