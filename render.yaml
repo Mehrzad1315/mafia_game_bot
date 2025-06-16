@@ -7,4 +7,4 @@ services:
     startCommand: "python3 mafia_roles.py"
     build:
       environment:
-        pythonVersion: 3.11
+        PYTHON_VERSION: 3.11
