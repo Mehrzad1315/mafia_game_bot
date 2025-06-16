@@ -570,6 +570,7 @@ TOKEN = os.getenv("BOT_TOKEN")
 async def main():
     app = ApplicationBuilder().token(TOKEN).build()
 
+    # اضافه کردن هندلرها
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(activate_account, pattern="^activate_account$"))
 
@@ -585,8 +586,8 @@ async def main():
         fallbacks=[CommandHandler("cancel", cancel)],
         per_chat=True
     )
-
     app.add_handler(conv_handler)
+
     app.add_handler(CallbackQueryHandler(join_button, pattern="^join_"))
     app.add_handler(CallbackQueryHandler(start_button, pattern="^startbtn_"))
     app.add_handler(CallbackQueryHandler(view_players, pattern="^view_"))
@@ -594,7 +595,9 @@ async def main():
     app.add_handler(CallbackQueryHandler(end_game, pattern="^endgame_"))
     app.add_handler(CallbackQueryHandler(restart_button, pattern="^restartbtn_"))
 
+    # شروع اجرای ربات (Polling)
     await app.run_polling()
 
+# اجرای مستقیم اسکریپت
 if __name__ == "__main__":
     asyncio.run(main())
