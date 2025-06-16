@@ -1,6 +1,7 @@
 import logging
 import random
 import uuid
+import os
 
 from telegram import (
     Update, InlineKeyboardButton, InlineKeyboardMarkup,
@@ -563,8 +564,8 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("⛔️ عملیات لغو شد.", reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
-
-app = ApplicationBuilder().token("7611616639:AAElVMoqcE2wQylnzyYDCuEjdxpTeCm--jQ").build()
+TOKEN = os.getenv("BOT_TOKEN")
+app = ApplicationBuilder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CallbackQueryHandler(activate_account, pattern="^activate_account$"))
