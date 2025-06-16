@@ -567,13 +567,11 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 
-async def main():
+def main():
     app = ApplicationBuilder().token(TOKEN).build()
-
     # اضافه کردن هندلرها
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(activate_account, pattern="^activate_account$"))
-
     conv_handler = ConversationHandler(
         entry_points=[
             CommandHandler("startgame", startgame),
@@ -584,20 +582,19 @@ async def main():
             SELECT_PLAYER_COUNT: [MessageHandler(filters.TEXT & ~filters.COMMAND, select_player_count)],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
-        per_chat=True
+        per_chat=True,
+        per_message=True  # This fixes the PTB warning
     )
     app.add_handler(conv_handler)
-
     app.add_handler(CallbackQueryHandler(join_button, pattern="^join_"))
     app.add_handler(CallbackQueryHandler(start_button, pattern="^startbtn_"))
     app.add_handler(CallbackQueryHandler(view_players, pattern="^view_"))
     app.add_handler(CallbackQueryHandler(add_fake_players, pattern=r"^add_fake_players\|"))
     app.add_handler(CallbackQueryHandler(end_game, pattern="^endgame_"))
     app.add_handler(CallbackQueryHandler(restart_button, pattern="^restartbtn_"))
-
     # شروع اجرای ربات (Polling)
-    await app.run_polling()
+    app.run_polling()
 
 # اجرای مستقیم اسکریپت
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
