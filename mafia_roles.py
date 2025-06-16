@@ -1,12 +1,12 @@
-from dotenv import load_dotenv
 import logging
 import random
 import uuid
 import os
-import asyncio
-from telegram import Update
 
-from telegram import Update
+from telegram import (
+    Update, InlineKeyboardButton, InlineKeyboardMarkup,
+    ReplyKeyboardMarkup, ReplyKeyboardRemove
+)
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler,
     MessageHandler, filters, ContextTypes, ConversationHandler
@@ -564,37 +564,30 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("⛔️ عملیات لغو شد.", reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
-load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
+app = ApplicationBuilder().token(TOKEN).build()
 
-def main():
-    app = ApplicationBuilder().token(TOKEN).build()
-    # اضافه کردن هندلرها
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(activate_account, pattern="^activate_account$"))
-    conv_handler = ConversationHandler(
-        entry_points=[
-            CommandHandler("startgame", startgame),
-            CallbackQueryHandler(restart_button, pattern="^restartbtn_")
-        ],
-        states={
-            SELECT_SCENARIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, select_scenario)],
-            SELECT_PLAYER_COUNT: [MessageHandler(filters.TEXT & ~filters.COMMAND, select_player_count)],
-        },
-        fallbacks=[CommandHandler("cancel", cancel)],
-        per_chat=True,
-        per_message=True  # This fixes the PTB warning
-    )
-    app.add_handler(conv_handler)
-    app.add_handler(CallbackQueryHandler(join_button, pattern="^join_"))
-    app.add_handler(CallbackQueryHandler(start_button, pattern="^startbtn_"))
-    app.add_handler(CallbackQueryHandler(view_players, pattern="^view_"))
-    app.add_handler(CallbackQueryHandler(add_fake_players, pattern=r"^add_fake_players\|"))
-    app.add_handler(CallbackQueryHandler(end_game, pattern="^endgame_"))
-    app.add_handler(CallbackQueryHandler(restart_button, pattern="^restartbtn_"))
-    # شروع اجرای ربات (Polling)
-    app.run_polling()
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CallbackQueryHandler(activate_account, pattern="^activate_account$"))
 
-# اجرای مستقیم اسکریپت
-if __name__ == "__main__":
-    main()
+conv_handler = ConversationHandler(
+    entry_points=[CommandHandler("startgame", startgame),
+        CallbackQueryHandler(restart_button, pattern="^restartbtn_")
+    ],
+    states={
+        SELECT_SCENARIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, select_scenario)],
+        SELECT_PLAYER_COUNT: [MessageHandler(filters.TEXT & ~filters.COMMAND, select_player_count)],
+    },
+    fallbacks=[CommandHandler("cancel", cancel)],
+    per_chat=True
+)
+
+app.add_handler(conv_handler)
+app.add_handler(CallbackQueryHandler(join_button, pattern="^join_"))
+app.add_handler(CallbackQueryHandler(start_button, pattern="^startbtn_"))
+app.add_handler(CallbackQueryHandler(view_players, pattern="^view_"))
+app.add_handler(CallbackQueryHandler(add_fake_players, pattern=r"^add_fake_players\|"))
+app.add_handler(CallbackQueryHandler(end_game, pattern="^endgame_"))
+app.add_handler(CallbackQueryHandler(restart_button, pattern="^restartbtn_"))
+
+app.run_polling()
