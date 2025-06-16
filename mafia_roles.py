@@ -1,15 +1,12 @@
 from dotenv import load_dotenv
-load_dotenv()
 import logging
 import random
 import uuid
 import os
 import asyncio
+from telegram import Update
 
-from telegram import (
-    Update, InlineKeyboardButton, InlineKeyboardMarkup,
-    ReplyKeyboardMarkup, ReplyKeyboardRemove
-)
+from telegram import Update
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler,
     MessageHandler, filters, ContextTypes, ConversationHandler
@@ -567,6 +564,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("⛔️ عملیات لغو شد.", reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
+load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 
 async def main():
@@ -596,10 +594,7 @@ async def main():
     app.add_handler(CallbackQueryHandler(end_game, pattern="^endgame_"))
     app.add_handler(CallbackQueryHandler(restart_button, pattern="^restartbtn_"))
 
-    await app.initialize()
-    await app.start()
-    await app.updater.start_polling()
-    await app.updater.idle()
+    await app.run_polling()
 
 if __name__ == "__main__":
     asyncio.run(main())
